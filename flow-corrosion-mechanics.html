@@ -1,1 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Mechanism Degradation & FAC | Berkeley Vincent</title>
+  <meta name="description" content="Technical analysis on flow-accelerated corrosion, chloride stress corrosion cracking, and NDE sensor arrays in coastal secondary cooling circuits.">
+  
+  <!-- MathJax for equation rendering -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --border: #30363d;
+      --code-bg: #0b0e14;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.75;
+      padding: 3rem 1.25rem;
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.05rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+
+    .nav-active {
+      color: var(--accent) !important;
+      font-weight: 600;
+    }
+
+    .nav-inactive {
+      color: var(--text-muted) !important;
+    }
+
+    header {
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      background: rgba(88, 166, 255, 0.1);
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+      border: 1px solid rgba(88, 166, 255, 0.2);
+    }
+
+    h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+
+    .author-meta {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-family: var(--font-mono);
+    }
+
+    article {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2.5rem 2rem;
+    }
+
+    article h2 {
+      font-size: 1.25rem;
+      color: #ffffff;
+      margin-top: 2.25rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    article h3 {
+      font-size: 1.05rem;
+      color: var(--accent);
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p { margin-bottom: 1.25rem; font-size: 1rem; }
+    ul, ol { margin-bottom: 1.25rem; padding-left: 1.5rem; }
+    li { margin-bottom: 0.4rem; }
+
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: rgba(88, 166, 255, 0.06);
+      padding: 1.2rem 1.25rem;
+      margin: 1.5rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .equation-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      padding: 1.2rem;
+      border-radius: 6px;
+      text-align: center;
+      margin: 1.5rem 0;
+      font-size: 1.15rem;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin: 1.5rem 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 0.75rem 0.6rem;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: var(--code-bg);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .disclaimer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--border);
+      font-style: italic;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 1.5rem 0.75rem; }
+      article { padding: 1.5rem 1rem; }
+      h1 { font-size: 1.5rem; }
+      nav { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Global Navigation Header -->
+    <nav>
+      <a href="index.html" class="brand">BV // SYSTEMS</a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-inactive">[01] Silicon Heat Sink</a>
+        <a href="water-energy-nexus.html" class="nav-inactive">[02] Water-Energy Nexus</a>
+        <a href="flow-corrosion-mechanics.html" class="nav-active">[03] FAC &amp; Degradation</a>
+      </div>
+    </nav>
+
+    <header>
+      <div class="badge">Materials Science &amp; Fluid Integrity</div>
+      <h1>Multi-Mechanism Degradation in Coastal Secondary Cooling Circuits: Coupled Hydrodynamic Modeling of FAC and Marine Stress Corrosion Cracking</h1>
+      <div class="author-meta">
+        Berkeley Vincent &bull; Materials Science, Fluid Dynamics &amp; Plant Asset Integrity
+      </div>
+    </header>
+
+    <article>
+      <div class="callout">
+        <strong>Executive Summary:</strong> Secondary cooling loops and intermediate heat-rejection circuits in coastal marine environments operate under coupled mechanical, chemical, and atmospheric degradation regimes. Internally, high-velocity demineralized water circuits induce Flow-Accelerated Corrosion (FAC) by stripping protective magnetite (\(\text{Fe}_3\text{O}_4\)) passivation layers. Externally, aerosolized chlorides drive Stress Corrosion Cracking (CISCC) and localized pitting across alloy boundaries. This paper develops a coupled multiphysics framework linking hydrodynamic wall shear stresses, electrochemical potential, and strain rates to predict wall thinning and establish continuous non-destructive condition monitoring.
+      </div>
+
+      <h2>1. The Dual-Vector Degradation Environment</h2>
+      <p>
+        Secondary-side fluid architectures in coastal industrial energy plants face simultaneous internal erosion-corrosion and external atmospheric attack:
+      </p>
+
+<pre>
+               CROSS-SECTION OF PIPE WALL DEGRADATION
+               
+     EXTERNAL: Marine Atmospheric Aerosols (NaCl, Relative Humidity 60-80%)
+     ─────────────────────────────────────────────────────────────────────
+     ▼   ▼   ▼   [Pitting & Chloride Stress Corrosion Cracking (CISCC)]
+     ═════════════════════════════════════════════════════════════════════  ◄── Pipe OD
+     ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  ◄── Base Metal (Carbon Steel / Austenitic)
+     ═════════════════════════════════════════════════════════════════════  ◄── Pipe ID
+     ▲   ▲   ▲   [Dissolution of Fe3O4 Layer by Hydrodynamic Wall Shear]
+     ─────────────────────────────────────────────────────────────────────
+     INTERNAL: High-Velocity Secondary Steam/Feedwater Flow (T = 120°C - 220°C)
+</pre>
+
+      <ol>
+        <li><strong>Internal Vector: Flow-Accelerated Corrosion (FAC):</strong> Under alkaline conditions, carbon steel forms a protective magnetite film (\(3\text{Fe} + 4\text{H}_2\text{O} \rightleftharpoons \text{Fe}_3\text{O}_4 + 4\text{H}_2\)). Between \(120^\circ\text{C}\) and \(180^\circ\text{C}\), turbulent eddies strip soluble ferrous ions (\(\text{Fe}^{2+}\)) from the interface, preventing film stabilization and causing continuous scalloped wall loss.</li>
+        <li><strong>External Vector: Chloride-Induced Stress Corrosion Cracking (CISCC):</strong> At relative humidity \(\text{RH} \ge 65\%\), deposited sea salt crystals form saturated chloride droplets on hot pipe surfaces (\(50^\circ\text{C}\text{--}95^\circ\text{C}\)). Residual tensile stresses from fabrication initiate transgranular or intergranular micro-fissures.</li>
+      </ol>
+
+      <h2>2. Mathematical Formulations &amp; Degradation Kinetics</h2>
+
+      <h3>Internal Wall Thinning Rate (Kastner-Sanchez Formulation)</h3>
+      <p>
+        The rate of metal loss due to FAC (\(\dot{m}_\text{FAC}\), in \(\text{mm/year}\)) is governed by the convective mass transfer coefficient (\(k_m\)) and the iron concentration gradient:
+      </p>
+
+      <div class="equation-box">
+        $$\dot{m}_\text{FAC} = k_m \cdot (\theta_\text{eq} - \theta_\text{bulk}) \cdot f(T) \cdot f(\text{pH}) \cdot f(\text{DO}) \cdot f(\text{Cr})$$
+      </div>
+
+      <p>
+        Where \(k_m = 0.023 \cdot \frac{D_\text{diff}}{d} \cdot \text{Re}^{0.8} \cdot \text{Sc}^{0.33}\) derives from the classic Dittus-Boelter / Chilton-Colburn analogy for turbulent boundary layers, and \(f(\text{Cr}) = \frac{1}{1 + 1.25[\%\text{Cr}]^{1.4}}\) quantifies the exponential protection imparted by chromium alloying.
+      </p>
+
+      <h3>Hydrodynamic Wall Shear Stress</h3>
+      <p>
+        At pipe bends, reducers, and branch junctions, local flow separation generates peak wall shear stresses (\(\tau_w\)):
+      </p>
+
+      <div class="equation-box">
+        $$\tau_w = \frac{1}{2} C_f \cdot \rho \cdot v^2$$
+      </div>
+
+      <p>
+        Where turbulence intensity (\(I = u'/U\)) exceeds \(15\%\), mechanical wall shear strips the porous sub-micron oxide layer faster than repassivation kinetics can reform it, producing accelerated local thinning rates up to \(3.5\text{ mm/year}\).
+      </p>
+
+      <h3>CISCC Crack Growth Propagation Rate</h3>
+      <p>
+        Following pitting initiation under tensile hoop stress (\(\sigma_h\)), the crack propagation rate (\(da/dt\)) follows the film-rupture / slip-dissolution model:
+      </p>
+
+      <div class="equation-box">
+        $$\frac{da}{dt} = A \cdot (K_I)^n \quad \text{where} \quad K_I = Y \cdot \sigma_h \sqrt{\pi a}$$
+      </div>
+
+      <p>
+        Crack extension arrests only when the stress intensity factor falls below the environmental threshold: \(K_I &lt; K_{ISCC}\).
+      </p>
+
+      <h2>3. Mitigation Architecture &amp; Alloy Selection Matrix</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Piping System Zone</th>
+            <th>Baseline Material</th>
+            <th>Vulnerability</th>
+            <th>Upgraded Standard</th>
+            <th>Engineering Justification</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>High-Turbulence Feedwater Loops</strong></td>
+            <td>Carbon Steel (ASTM A106 Gr B)</td>
+            <td>Severe FAC (&gt;2.0 mm/yr) from 0% Cr</td>
+            <td>Low-Alloy Chrome-Moly (ASTM A335 Gr P22)</td>
+            <td>2.25% Cr stabilizes a dense spinel \((\text{Fe},\text{Cr})_3\text{O}_4\) layer, reducing FAC by &gt;95%.</td>
+          </tr>
+          <tr>
+            <td><strong>Marine Coastal External Runs</strong></td>
+            <td>Austenitic 304L / 316L</td>
+            <td>External CISCC in salt aerosol zones</td>
+            <td>Super Duplex (UNS S32750 / 2507)</td>
+            <td>\(\text{PREN} \ge 42\). Immune to chloride pitting and transgranular SCC below 110&deg;C.</td>
+          </tr>
+          <tr>
+            <td><strong>Secondary Heat Exchanger Tubing</strong></td>
+            <td>Copper-Nickel (CuNi 90/10)</td>
+            <td>Ammonia stress cracking &amp; erosion</td>
+            <td>Titanium Gr 2 / Inconel 625</td>
+            <td>Absolute chemical passivity across hyper-saline seawater and amine chemistry.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>4. In-Situ Non-Destructive Inspection Framework</h2>
+      <p>
+        Periodic plant turnaround inspections leave systems vulnerable to mid-cycle pinhole penetration. The integrity regime integrates two continuous screening modalities:
+      </p>
+
+<pre>
++------------------------------------------------------------------------+
+|             ADVANCED DUAL-TIER NDE MONITORING SUITE                     |
+|                                                                        |
+|  [ Magnetostrictive Guided Wave UT (GWUT) ]                            |
+|  • 100% Volumetric Long-Range Screening (Up to 30 m from single collar)|
+|  • Identifies Scalloped Wall Thinning and Internal FAC Clusters        |
+|                                                                        |
+|  [ Pulsed Eddy Current (PEC) Surface Matrix ]                          |
+|  • Through-Insulation Inspection (No cladding strip-down required)    |
+|  • Measures Remaining Ligament Thickness & Detects External CISCC Pits |
++------------------------------------------------------------------------+
+</pre>
+
+      <ol>
+        <li><strong>Guided Wave Ultrasonic Testing (GWUT):</strong> Torsional mode waves (\(T(0,1)\)) transmitted along pipe walls at \(20\text{--}100\text{ kHz}\) screen long linear runs, identifying cross-sectional metal loss \(\ge 3\%\) without stripping external coatings.</li>
+        <li><strong>Pulsed Eddy Current (PEC):</strong> Induces transient electromagnetic decay through thermal jacketing, measuring remaining ligament thickness with \(\pm 0.2\text{ mm}\) accuracy without requiring line shutdowns.</li>
+      </ol>
+
+      <h2>5. Conclusion</h2>
+      <p>
+        Operating critical energy and cooling networks in coastal maritime zones requires active defense against coupled internal and external corrosion mechanisms. By combining hydrodynamic wall shear modeling, chromium-stabilized metallurgy, and dual-tier ultrasonic/electromagnetic condition monitoring, engineering authorities eliminate unpredicted pressure boundary breaches, guaranteeing multi-decadal asset integrity.
+      </p>
+
+      <div class="disclaimer">
+        Disclaimer: This monograph is an independent engineering analysis derived exclusively from unclassified scientific literature, ASME codes, and open metallurgical research. It represents the personal technical views of the author and has no relation to any corporate employer or government defense program.
+      </div>
+
+      <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <a href="water-energy-nexus.html" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); text-decoration: none;">
+          &larr; Previous: [02] Water-Energy Nexus
+        </a>
+        <a href="index.html" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); text-decoration: none;">
+          Return to Home [01] &uarr;
+        </a>
+      </div>
+    </article>
+
+    <footer>
+      &copy; 2026 Berkeley Vincent. All rights reserved.
+    </footer>
+  </div>
+
+</body>
+</html>
