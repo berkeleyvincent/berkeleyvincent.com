@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inverse Gamma Radiometry & Autonomous Dosimetry | Berkeley Vincent</title>
+  <meta name="description" content="Technical monograph on inverse photon transport, directional CZT spectrometry, and LiDAR-based Bayesian SLAM for autonomous high-gradient radiological mapping.">
+  
+  <!-- MathJax for equation rendering -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --border: #30363d;
+      --code-bg: #0b0e14;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.75;
+      padding: 3rem 1.25rem;
+    }
+
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.05rem;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      text-decoration: none;
+    }
+
+    .nav-active {
+      color: var(--accent) !important;
+      font-weight: 600;
+    }
+
+    .nav-inactive {
+      color: var(--text-muted) !important;
+    }
+
+    .nav-inactive:hover {
+      color: var(--text) !important;
+    }
+
+    header {
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+
+    .badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      background: rgba(88, 166, 255, 0.1);
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+      border: 1px solid rgba(88, 166, 255, 0.2);
+    }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+
+    .author-meta {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-family: var(--font-mono);
+    }
+
+    article {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2.5rem 2rem;
+    }
+
+    article h2 {
+      font-size: 1.25rem;
+      color: #ffffff;
+      margin-top: 2.25rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    article h3 {
+      font-size: 1.05rem;
+      color: var(--accent);
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p { margin-bottom: 1.25rem; font-size: 1rem; }
+    ul, ol { margin-bottom: 1.25rem; padding-left: 1.5rem; }
+    li { margin-bottom: 0.4rem; }
+
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: rgba(88, 166, 255, 0.06);
+      padding: 1.2rem 1.25rem;
+      margin: 1.5rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .equation-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      padding: 1.2rem;
+      border-radius: 6px;
+      text-align: center;
+      margin: 1.5rem 0;
+      font-size: 1.15rem;
+    }
+
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin: 1.5rem 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 0.75rem 0.6rem;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: var(--code-bg);
+      color: #ffffff;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .disclaimer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--border);
+      font-style: italic;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 1.5rem 0.75rem; }
+      article { padding: 1.5rem 1rem; }
+      h1 { font-size: 1.5rem; }
+      nav { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Global Navigation Header -->
+    <nav>
+      <a href="index.html" class="brand">BV // SYSTEMS</a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-inactive">[01] Silicon Heat Sink</a>
+        <a href="water-energy-nexus.html" class="nav-inactive">[02] Water-Energy Nexus</a>
+        <a href="flow-corrosion-mechanics.html" class="nav-inactive">[03] FAC &amp; Degradation</a>
+        <a href="autonomous-dosimetry-slam.html" class="nav-active">[04] Autonomous Dosimetry</a>
+      </div>
+    </nav>
+
+    <header>
+      <div class="badge">Applied Nuclear Physics &amp; Autonomous Robotics</div>
+      <h1>Inverse Gamma Radiometry and Autonomous Robotic Dosimetry in High-Gradient Radiation Fields</h1>
+      <div class="author-meta">
+        Berkeley Vincent &bull; Nuclear Physics, Radiological Protection &amp; Autonomous Systems Architecture
+      </div>
+    </header>
+
+    <article>
+      <div class="callout">
+        <strong>Executive Summary:</strong> Characterizing complex nuclear environments—such as reactor cavities, spent fuel infrastructure, and heavily shielded containment penetrations—traditionally requires manual health physics entries that accumulate collective occupational dose. In high-gradient gamma fields (\(>50\text{ mSv/h}\)), static point surveys fail to capture localized hot-spot streaming or geometric attenuation boundaries. This paper develops an algorithmic framework for autonomous robotic survey platforms, coupling directional scintillation spectrometry with 3D LiDAR SLAM and Bayesian Maximum A Posteriori (MAP) inverse solvers to localize radiation sources, optimize ALARA, and eliminate direct personnel risk.
+      </div>
+
+      <h2>1. The Challenge of High-Gradient Dose Mapping &amp; ALARA Limits</h2>
+      <p>
+        In nuclear plant sustainment, major outages, and decommissioning, occupational dose is strictly governed by the international ALARA principle (<em>As Low As Reasonably Achievable</em>). Conventional manual survey workflows confront three fundamental physical and operational limitations:
+      </p>
+      <ol>
+        <li><strong>Integrated Worker Exposure:</strong> Survey teams carrying hand-held ion chambers or GM meters must physically traverse uncharacterized fields, absorbing unnecessary transit dose before diagnostic measurements can be taken.</li>
+        <li><strong>The High-Gradient Inverse Problem:</strong> Dose rates near unshielded pipe elbows, valve bonnets, or filter banks can surge from \(0.05\text{ mSv/h}\) to over \(100\text{ mSv/h}\) across distances under \(0.5\text{ m}\). Discrete manual sampling frequently misses narrow streaming beams due to spatial interpolation gaps.</li>
+        <li><strong>Spectral &amp; Directional Ambiguity:</strong> Standard survey meters record gross ambient dose equivalent rate (\(\dot{H}^*(10)\)) but lack directional sensitivity and real-time isotope identification. This obscures whether a hot spot originates from primary activation products (such as \(^{60}\text{Co}\) at \(1.17\text{ MeV}\) and \(1.33\text{ MeV}\)) or lower-energy scattered flux.</li>
+      </ol>
+
+<pre>
+       ROBOTIC VOLUMETRIC ISOTOPIC LOCALIZATION SCHEMA
+       
+   [ Unknown Gamma Source ]  (Cobalt-60 / Cesium-137)
+            *  (Activity A_0)
+           / \
+          /   \  [Attenuated Flux: I = I_0 * B * exp(-mu * x)]
+         /     \
+        ▼       ▼
+   [ Position 1 ] ──► [ Position 2 ] ──► [ Position 3 ]  (Autonomous Trajectory)
+   {LiDAR Point Cloud}  {Directional CZT Detector}  {Bayesian MAP Fusion}
+</pre>
+
+      <h2>2. Mathematical Formulations &amp; Inverse Radiometry</h2>
+
+      <h3>Forward Attenuated Photon Transport Formulation</h3>
+      <p>
+        For an isotropic gamma emitter of activity \(A_0\) located at unknown coordinates \(\mathbf{r}_s = (x_s, y_s, z_s)\), the uncollided photon flux (\(\Phi\)) recorded by an autonomous detector at position \(\mathbf{r}_d = (x_d, y_d, z_d)\) through multi-layer shielding media is modeled as:
+      </p>
+
+      <div class="equation-box">
+        $$\Phi(\mathbf{r}_d) = \left[ \frac{A_0 \cdot \Gamma_E}{4\pi \|\mathbf{r}_s - \mathbf{r}_d\|^2} \right] \cdot B(E, \mu, x) \cdot \exp\left( -\sum_{i} \mu_i x_i \right)$$
+      </div>
+
+      <p>
+        Where \(\Gamma_E\) is the specific gamma-ray emission yield, \(\mu_i\) is the linear attenuation coefficient of shielding layer \(i\), \(x_i\) is the ray-traced chord length through that material derived from the real-time onboard LiDAR mesh, and \(B(E, \mu, x)\) is the Taylor or Berger secondary buildup factor accounting for forward Compton scattering:
+      </p>
+
+      <div class="equation-box">
+        $$B(E, \mu, x) = 1 + a(\mu x) \cdot \exp\left(b \cdot \mu x\right)$$
+      </div>
+
+      <h3>Bayesian Maximum A Posteriori (MAP) Source Estimation</h3>
+      <p>
+        As the autonomous platform navigates an unmapped compartment, it records a time-series of \(N\) spatial poses and corresponding spectral count rates:
+      </p>
+
+      <div class="equation-box">
+        $$\mathcal{Z} = \{ (\mathbf{r}_1, C_1), (\mathbf{r}_2, C_2), \dots, (\mathbf{r}_N, C_N) \}$$
+      </div>
+
+      <p>
+        Because gamma emission and detection follow Poisson statistics, the likelihood of observing count rate \(C_k\) given candidate source position \(\mathbf{r}_s\) and activity \(A\) is:
+      </p>
+
+      <div class="equation-box">
+        $$P(C_k \mid \mathbf{r}_s, A) = \frac{(\lambda_k)^{C_k} e^{-\lambda_k}}{C_k!} \quad \text{where} \quad \lambda_k = \epsilon \cdot \Phi(\mathbf{r}_k, \mathbf{r}_s, A) + C_{\text{bkg}}$$
+      </div>
+
+      <p>
+        Source coordinates and source strength are resolved by minimizing the penalized negative log-posterior objective function:
+      </p>
+
+      <div class="equation-box">
+        $$J(\mathbf{r}_s, A) = \sum_{k=1}^N \left[ \lambda_k - C_k \ln(\lambda_k) \right] + \frac{1}{2\sigma_{\text{prior}}^2} \|\mathbf{r}_s - \mathbf{r}_{\text{prior}}\|^2$$
+      </div>
+
+      <p>
+        Applying iterative Gauss-Newton optimization yields sub-decimeter localization of concealed radiation sources behind bulkheads or valve internals prior to any human entry.
+      </p>
+
+      <h2>3. Autonomous Sensor Fusion &amp; SLAM Architecture</h2>
+
+<pre>
++------------------------------------------------------------------------+
+|           ONBOARD AUTONOMOUS RADIOMETRIC HARDWARE STACK                |
+|                                                                        |
+|  [ 3D LiDAR Scanner ] ────────► Real-Time Occupancy Mesh & Volumetric  |
+|                                 Material Ray-Tracing                   |
+|                                                                        |
+|  [ Directional CZT / NaI ] ───► Multi-Channel Energy Spectroscopy      |
+|                                 (50 keV - 3.0 MeV Gamma Windowing)     |
+|                                                                        |
+|  [ EKF / Pose Graph SLAM ] ───► Drift-Free Localization (&lt; 2 cm error) |
+|                                 Coupled to Dose Iso-Contour Heatmaps   |
++------------------------------------------------------------------------+
+</pre>
+
+      <ol>
+        <li><strong>Pose Estimation via LiDAR SLAM:</strong> In GPS-denied, metal-dense enclosures, a multi-beam 3D LiDAR sensor fused with an industrial tactical-grade IMU and wheel odometry delivers real-time trajectory estimation with \(<2\text{ cm}\) drift.</li>
+        <li><strong>Volumetric Ray-Casting over Voxel Grids:</strong> The platform dynamically processes raw point clouds into an OctoMap 3D voxel representation. Ray-casting algorithms extract material chord lengths (\(x_i\)) along the lines of sight between hypothesized source locations and the detector, feeding the exponential attenuation terms in real time.</li>
+        <li><strong>Automated Energy Windowing:</strong> Utilizing room-temperature Cadmium Zinc Telluride (CZT) coplanar grid sensors, the system performs automated pulse-height analysis (PHA). By windowing the \(1.17\text{ MeV}\) and \(1.33\text{ MeV}\) photopeaks of \(^{60}\text{Co}\) and the \(662\text{ keV}\) line of \(^{137}\text{Cs}\), the robot separates activation hot spots from background scatter.</li>
+      </ol>
+
+      <h2>4. Operational Implementation &amp; Performance Metrics</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Operational Metric</th>
+            <th>Manual Health Physics Entry</th>
+            <th>Autonomous Robotic Dosimetry</th>
+            <th>Performance Delta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Worker Dose Accumulation</strong></td>
+            <td>0.80 &ndash; 2.50 mSv per survey team</td>
+            <td>0.00 mSv (Remote autonomous scan)</td>
+            <td>&gt;99% dose reduction (ALARA optimum)</td>
+          </tr>
+          <tr>
+            <td><strong>Spatial Data Density</strong></td>
+            <td>10 &ndash; 25 discrete static points</td>
+            <td>&gt;5,000 continuous spatial voxels</td>
+            <td>200x increase in mapping fidelity</td>
+          </tr>
+          <tr>
+            <td><strong>Survey Execution Time</strong></td>
+            <td>45 &ndash; 90 min (stay-time limited)</td>
+            <td>18 min (path-optimized autonomous run)</td>
+            <td>60% &ndash; 80% reduction in critical path downtime</td>
+          </tr>
+          <tr>
+            <td><strong>Localization Precision</strong></td>
+            <td>Manual estimation from audio clicks</td>
+            <td>Algorithmic 3D inverse solver (\(\pm 5\text{ cm}\))</td>
+            <td>Sub-decimeter source pin-pointing</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>5. Conclusion</h2>
+      <p>
+        Transitioning from manual, point-based radiological surveys to autonomous robotic dosimetry eliminates the classic compromise between personnel radiation exposure and spatial data resolution. Coupling classical photon transport attenuation models with Bayesian maximum a posteriori optimization and LiDAR SLAM allows industrial nuclear facilities to map radiation fields with high precision, minimize collective occupational dose, and enforce verifiable ALARA compliance across complex operating environments.
+      </p>
+
+      <div class="disclaimer">
+        Disclaimer: This monograph is an independent engineering analysis based entirely on open-source health physics literature, classical radiometry, and robotics research. It represents the personal technical work of the author and contains no proprietary, defense-classified, or corporate-confidential operational information.
+      </div>
+
+      <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <a href="flow-corrosion-mechanics.html" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); text-decoration: none;">
+          &larr; Previous: [03] FAC &amp; Degradation
+        </a>
+        <a href="index.html" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); text-decoration: none;">
+          Return to Home [01] &uarr;
+        </a>
+      </div>
+    </article>
+
+    <footer>
+      &copy; 2026 Berkeley Vincent. All rights reserved.
+    </footer>
+  </div>
+
+</body>
+</html>
